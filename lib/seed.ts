@@ -1,0 +1,15 @@
+import type { Data, Procedure, Supply } from './domain.ts';
+export const uid=()=>crypto.randomUUID();
+export const today=()=>new Date().toISOString().slice(0,10);
+export const categories=['Estética facial','Estética corporal','Procedimentos injetáveis','Harmonização facial','Tratamentos dermatológicos','Tratamentos com equipamentos','Terapias e procedimentos de saúde','Outros serviços personalizados'];
+export function emptyProcedure():Procedure{return {id:uid(),code:'',name:'',category:categories[0],description:'',specialty:'Estética',professional:'',location:'Unidade principal',minutes:60,sessions:1,active:true,hourly:0,burden:0,assistant:0,depreciation:0,maintenance:0,energy:0,rental:0,room:0,cleaning:0,sterilization:0,waste:0,other:0,commission:0,card:0,target:30,price:0,taxIds:[],items:[],updated:today()};}
+export function emptySupply():Supply{return {id:uid(),code:'',name:'',description:'',category:'Cosméticos',brand:'',supplier:'',purchaseUnit:'Embalagem',pack:1,unit:'un',price:0,freight:0,tax:0,discount:0,loss:0,expiry:'',stock:0,minimum:0,updated:today()};}
+export function emptyData():Data{return {schema:1,supplies:[],procedures:[],taxes:[],references:[],snapshots:[],audit:[],settings:{clinic:'Minha clínica',minimumMargin:25,staleDays:90,tolerance:10,minimumReferences:3,capacity:160,driver:'hours',fixed:[]}};}
+export function demoData():Data{
+ const d=emptyData();d.settings.clinic='Clínica Meraki · Demonstração';d.settings.fixed=[{id:uid(),name:'Aluguel',amount:2400},{id:uid(),name:'Administração e recepção',amount:3200},{id:uid(),name:'Internet, software e contabilidade',amount:800}];
+ const names=['Sérum hidratante','Máscara facial','Luvas de procedimento','Gel condutor','Produto injetável — exemplo','Gaze estéril'];
+ d.supplies=names.map((name,i)=>({...emptySupply(),code:`INS-00${i+1}`,name,description:'Cadastro fictício para demonstração.',brand:'Marca demonstrativa',supplier:'Fornecedor fictício',pack:[30,200,100,1000,10,100][i],unit:(['mL','g','un','g','mL','un'] as const)[i],price:[180,120,45,65,600,35][i],loss:5,stock:[8,5,12,4,3,10][i],minimum:3}));
+ d.taxes=[{id:uid(),name:'Alíquota efetiva de exemplo',regime:'Personalizado',base:'revenue',rate:6,start:'2026-01-01',end:'',source:'Premissa fictícia de demonstração. Não é uma tabela fiscal.',category:''}];
+ const specs=[['Limpeza de pele',0,60,240,100],['Hidratação facial',0,45,220,100],['Microagulhamento',4,60,390,140],['Tratamento corporal',1,75,280,100],['Procedimento injetável',2,40,550,180],['Avaliação e terapia',6,50,160,100]] as const;
+ d.procedures=specs.map(([name,c,minutes,price,hourly],i)=>({...emptyProcedure(),code:`PRO-00${i+1}`,name,category:categories[c],description:'Procedimento fictício. Ajuste consumo e parâmetros antes de usar.',professional:'Profissional demonstrativo',minutes,price,hourly,card:2.5,commission:3,cleaning:4,waste:2,taxIds:[d.taxes[0].id],items:[{supplyId:d.supplies[i===4?4:0].id,quantity:i===4?0.5:1,unit:'mL',loss:5},{supplyId:d.supplies[2].id,quantity:2,unit:'un',loss:0}],depreciation:i===2?12:0}));return d;
+}

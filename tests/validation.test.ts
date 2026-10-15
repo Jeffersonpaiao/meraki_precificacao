@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {dataSchema} from '../lib/validation.ts';
+import {demoData} from '../lib/seed.ts';
+test('base demonstrativa válida',()=>assert.equal(dataSchema.safeParse(demoData()).success,true));
+test('códigos duplicados são rejeitados',()=>{const d=demoData();d.supplies[1].code=d.supplies[0].code;assert.equal(dataSchema.safeParse(d).success,false);});
+test('vínculos órfãos são rejeitados',()=>{const d=demoData();d.supplies=[];assert.equal(dataSchema.safeParse(d).success,false);});
+test('datas impossíveis são rejeitadas',()=>{const d=demoData();d.supplies[0].updated='2026-02-30';assert.equal(dataSchema.safeParse(d).success,false);});
+test('rendimento zero e perda integral são rejeitados',()=>{const d=demoData();d.supplies[0].pack=0;assert.equal(dataSchema.safeParse(d).success,false);d.supplies[0].pack=10;d.supplies[0].loss=100;assert.equal(dataSchema.safeParse(d).success,false);});
+test('backup não admite URL executável',()=>{const d=demoData();d.references=[{id:'x',procedureId:d.procedures[0].id,establishment:'Clínica',price:100,date:'2026-10-13',city:'Cidade',state:'RO',region:'',type:'',positioning:'',source:'Pesquisa',url:'javascript:alert(1)',conditions:'',sessions:1,comparable:true,notes:''}];assert.equal(dataSchema.safeParse(d).success,false);});

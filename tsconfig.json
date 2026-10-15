@@ -1,0 +1,63 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "types": [
+      "node"
+    ],
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "app/layout.tsx",
+    "app/page.tsx",
+    "app/api/**/*.ts",
+    "components/meraki/**/*.tsx",
+    "lib/domain.ts",
+    "lib/finance.ts",
+    "lib/seed.ts",
+    "lib/validation.ts",
+    "lib/reports.ts",
+    "lib/supabase.ts",
+    "tests/**/*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    ".next-meraki/types/**/*.ts",
+    ".next-meraki/dev/types/**/*.ts",
+    "app/admin/**/*.tsx",
+    "app/demo/**/*.tsx",
+    "lib/server-auth.ts",
+    ".next-production/types/**/*.ts",
+    ".next-production/dev/types/**/*.ts",
+    "lib/supply-import.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "examples"
+  ]
+}

@@ -1,0 +1,9 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {parseSupplies,supplyHeaders,readSupplies,supplyTemplate} from '../lib/supply-import.ts';
+const row=()=>['0001','Luvas','Descartáveis','','','','Caixa',100,'un','45,90','','','','','','10','2'];
+test('importa valores brasileiros, datas e mantém zeros do código',()=>{const r=row();r[9]='1.234,56';r[14]='31/12/2027';const [s]=parseSupplies([supplyHeaders,r],[]);assert.equal(s.code,'0001');assert.equal(s.price,1234.56);assert.equal(s.expiry,'2027-12-31');assert.equal(s.freight,0);});
+test('rejeita lote duplicado e código já existente sem alterar cadastros',()=>{const r=row();assert.throws(()=>parseSupplies([supplyHeaders,r,r],[]),/duplicado/);const existing=parseSupplies([supplyHeaders,r],[]);assert.throws(()=>parseSupplies([supplyHeaders,r],existing),/já cadastrado/);assert.equal(existing.length,1);});
+test('rejeita conteúdo zero, perda integral, data impossível e números ambíguos',()=>{for(const [index,value] of [[7,0],[13,100],[14,'31/02/2027'],[9,'abc'],[8,'caixa'],[1,'']] as const){const r=row();r[index]=value;assert.throws(()=>parseSupplies([supplyHeaders,r],[]));}});
+test('modelo Excel é legível e fórmulas são rejeitadas',async()=>{const ExcelJS=(await import('exceljs')).default;const w=new ExcelJS.Workbook();await w.xlsx.load(await (await supplyTemplate()).arrayBuffer());const sheet=w.getWorksheet('Insumos')!;sheet.addRow(row());const file=()=>w.xlsx.writeBuffer().then(b=>new File([b as ArrayBuffer],'insumos.xlsx'));assert.equal((await readSupplies(await file(),[])).length,1);sheet.getCell('J2').value={formula:'40+5',result:45};await assert.rejects(readSupplies(await file(),[]),/sem fórmulas/);});
+test('limites e planilhas vazias são rejeitados',()=>{assert.throws(()=>parseSupplies([supplyHeaders],[]),/vazia/);assert.throws(()=>parseSupplies([supplyHeaders,...Array.from({length:2001},row)],[]),/2.000/);});

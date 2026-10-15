@@ -1,0 +1,4 @@
+import {createClient} from '@supabase/supabase-js';
+let client:ReturnType<typeof createClient>|null=null;
+export function getBrowserClient(){const url=process.env.NEXT_PUBLIC_SUPABASE_URL;const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;if(!url||!key)return null;return client??=createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});}
+export async function api(path:string,init:RequestInit={}){const client=getBrowserClient();if(!client)throw new Error('Ambiente não configurado.');const {data,error}=await client.auth.getSession();if(error||!data.session)throw new Error('Entre novamente para continuar.');const response=await fetch(path,{...init,headers:{...init.headers,Authorization:`Bearer ${data.session.access_token}`,'Content-Type':'application/json'}});const body=await response.json();if(!response.ok)throw new Error(body.error||'Não foi possível concluir a operação.');return body;}
