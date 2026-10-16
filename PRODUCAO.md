@@ -2,14 +2,14 @@
 
 ## Estado
 
-Aplicação Next.js com portal autenticado (`/`), administração geral (`/admin`) e demonstração isolada (`/demo`). A criação de clínicas, vínculos e suspensão depende das migrações Supabase. A publicação e a validação do login real ainda aguardam o projeto Supabase dedicado.
+Aplicação Next.js com portal autenticado (`/`), administração geral (`/admin`) e demonstração isolada (`/demo`). O projeto Supabase dedicado `ukwrbaldzovbiukkqshv` foi criado na região de São Paulo e as duas migrações foram aplicadas. A aplicação está publicada na Vercel em `https://meraki-precificacao.vercel.app`.
 
 ## Banco de dados
 
-1. Criar o projeto **Meraki Precificação** na organização **jeffersondpaiao@gmail.com's Org**. Preferir a região São Paulo se disponível no plano.
-2. Aplicar, na ordem, os arquivos em `supabase/migrations` em um banco novo. Não executar novamente `database/schema.sql`: ele corresponde à primeira migração.
-3. Configurar confirmação de e-mail e um provedor SMTP para envio de confirmação em produção. Configurar a URL pública do site e os redirecionamentos permitidos no Supabase Auth.
-4. Configurar as duas variáveis de `.env.example`. Usar somente a chave pública/publishable, nunca `service_role` no navegador.
+1. As migrações de `supabase/migrations` já foram aplicadas, na ordem, ao projeto dedicado. Não executar novamente `database/schema.sql`: ele corresponde à primeira migração.
+2. No Supabase Auth → URL Configuration, definir **Site URL** como `https://meraki-precificacao.vercel.app` e incluir esse endereço em **Redirect URLs**. Incluir origens locais ou de preview somente quando forem usadas.
+3. Configurar confirmação de e-mail e um provedor SMTP próprio antes de abrir cadastro para outras pessoas; o envio padrão do Supabase não é apropriado para produção.
+4. As duas variáveis de `.env.example` estão configuradas na Vercel para produção, preview e desenvolvimento. Usar somente a chave pública/publishable, nunca `service_role` no navegador.
 5. Criar e confirmar a conta **jeffersondpaiao@gmail.com** pelo portal. A senha é definida pelo próprio titular, fora do chat.
 6. Executar `database/bootstrap-admin.sql` pelo console SQL confiável. O script só concede administração ao e-mail indicado após confirmação.
 
@@ -26,7 +26,7 @@ Uma pessoa pode ter vínculos com várias clínicas e deve escolher explicitamen
 
 ## Publicação
 
-Usar a pasta `work/meraki` como raiz do projeto de hospedagem Next.js. Configurar as duas variáveis públicas antes do build. Com Node.js 22 ou superior:
+Usar a raiz deste repositório como raiz do projeto de hospedagem Next.js. Com Node.js 22 ou superior:
 
 ```sh
 npm ci
@@ -46,7 +46,7 @@ Após ativar: entrar como administrador principal; criar duas clínicas; vincula
 
 ## Limitações atuais
 
-Sem projeto Supabase ativo configurado, o portal mostra “Ativação em andamento”. Nenhum acesso administrativo fictício é liberado. A demonstração funciona apenas no navegador. O cadastro público de contas depende das configurações Auth; para convites fechados, criar as contas pelo painel Supabase e desabilitar novos cadastros. O gerenciamento de vínculos não envia convites automaticamente.
+O cadastro público de contas depende das configurações Auth; para convites fechados, criar as contas pelo painel Supabase e desabilitar novos cadastros. O gerenciamento de vínculos não envia convites automaticamente. O primeiro administrador só recebe acesso após criar e confirmar a conta e executar `database/bootstrap-admin.sql`.
 
 ## Validação local em 15/10/2026
 18 testes aprovados, TypeScript aprovado e build de produção aprovado com um processo de geração. O servidor local executa o build em .next-production na porta 3000. A confirmação de custos/criação automática do Supabase ficou indisponível no conector; aguarda-se o ID do projeto criado pelo titular. Nenhuma aplicação foi publicada nem administrador provisionado em nuvem nesta etapa.
