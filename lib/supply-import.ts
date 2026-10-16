@@ -5,6 +5,14 @@ import {emptyData} from './seed.ts';
 
 export const supplyHeaders=['codigo','nome','categoria','descricao','marca','fornecedor','unidade_compra','conteudo','unidade','preco','frete','tributos','desconto','perda_percentual','validade','estoque','estoque_minimo'];
 type Cell=string|number|Date|null;
+const unitAliases:Record<string,Supply['unit']>={
+ un:'un',und:'un',unid:'un',unidade:'un',unidades:'un',
+ ml:'mL',mililitro:'mL',mililitros:'mL',
+ l:'L',litro:'L',litros:'L',
+ g:'g',gr:'g',grama:'g',gramas:'g',
+ kg:'kg',quilo:'kg',quilos:'kg',quilograma:'kg',quilogramas:'kg',
+};
+function normalizeUnit(value:string){return value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().replace(/\.$/,'');}
 export function parseSupplies(rows:Cell[][],existing:Supply[]):Supply[]{
  if(rows.length<2)throw new Error('A planilha está vazia. Preencha o modelo antes de importar.');
  if(rows.length>2001)throw new Error('Importe no máximo 2.000 linhas por arquivo.');
@@ -17,7 +25,7 @@ export function parseSupplies(rows:Cell[][],existing:Supply[]):Supply[]{
   const number=(i:number,required=false)=>{const raw=row[i];if(raw===null||raw===undefined||text(i)===''){if(required)throw new Error(`Linha ${line}: preencha ${supplyHeaders[i]}.`);return 0;}let value:number;if(typeof raw==='number')value=raw;else{let str=text(i);if(!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d+)?$/.test(str)&&!/^\d+(?:\.\d+)?$/.test(str))throw new Error(`Linha ${line}: ${supplyHeaders[i]} deve ser um número positivo, sem R$ ou %.`);if(str.includes(','))str=str.replace(/\./g,'').replace(',','.');value=Number(str);}if(!Number.isFinite(value)||value<0)throw new Error(`Linha ${line}: ${supplyHeaders[i]} inválido.`);return value;};
   const code=text(0);if(codes.has(code.toLowerCase()))throw new Error(`Linha ${line}: código “${code}” duplicado na planilha ou já cadastrado. Nenhum item foi importado.`);codes.add(code.toLowerCase());
   let expiry=text(14);if(row[14] instanceof Date)expiry=row[14].toISOString().slice(0,10);else if(/^\d{2}\/\d{2}\/\d{4}$/.test(expiry))expiry=expiry.split('/').reverse().join('-');
-  const units:Record<string,Supply['unit']>={un:'un',ml:'mL',l:'L',g:'g',kg:'kg'};const unit=units[text(8).toLowerCase()];if(!unit)throw new Error(`Linha ${line}: unidade deve ser un, mL, L, g ou kg.`);
+  const unit=unitAliases[normalizeUnit(text(8))];if(!unit)throw new Error(`Linha ${line}, coluna I (unidade de consumo): “${text(8)}” não é uma medida aceita. Use un, mL, L, g ou kg. Caixa e frasco pertencem à coluna G (unidade de compra).`);
   const s:Supply={...emptySupply(),code,name:text(1),category:text(2),description:text(3),brand:text(4),supplier:text(5),purchaseUnit:text(6)||'Embalagem',pack:number(7,true),unit,price:number(9,true),freight:number(10),tax:number(11),discount:number(12),loss:number(13),expiry,stock:number(15),minimum:number(16)};
   const check=dataSchema.safeParse({...emptyData(),supplies:[s]});if(!check.success)throw new Error(`Linha ${line}: revise ${check.error.issues.map(i=>`${i.path.slice(2).join('.')||'valores'} (${i.message})`).join('; ')}`);
   result.push(s);
@@ -42,7 +50,7 @@ export async function supplyTemplate(){
  const help=w.addWorksheet('Instruções');[
  'Preencha a aba Insumos; não altere os cabeçalhos.',
  'Obrigatórios: codigo, nome, conteudo, unidade, preco. Código deve ser único; use texto para preservar zeros à esquerda.',
- 'Unidades: un, mL, L, g, kg. Conteúdo é a quantidade por embalagem, maior que zero.',
+ 'Na coluna G, informe a embalagem de compra (ex.: caixa ou frasco). Na coluna I, informe a unidade de consumo: un, mL, L, g ou kg. Abreviações equivalentes, como und e gr, também são aceitas. Conteúdo é a quantidade por embalagem, maior que zero.',
  'Preço, frete, tributos e desconto são valores por embalagem em reais. Não digite R$.',
  'Perda percentual: digite 5 para 5%; não formate a célula como porcentagem. Deve ser menor que 100.',
  'Validade: data Excel, DD/MM/AAAA ou AAAA-MM-DD; pode ficar vazia.',
